@@ -1,0 +1,189 @@
+#actor-list li,
+#actor-list-core li
+{
+    list-style: none;
+    line-height: 2;
+}
+
+#category-list li,
+#category-list-core li
+{
+    list-style: none;
+    line-height: 2;
+}
+
+#activity-list li,
+#activity-list-core li
+{
+    list-style: none;
+    line-height: 2;
+}
+#actor-list li [type=checkbox], #activity-list li [type=checkbox], #category-list li [type=checkbox],
+#actor-list-core li [type=checkbox], #activity-list-core li [type=checkbox], #category-list-core li [type=checkbox]
+{
+    background-color: #e8e8e8;
+    border: 1px solid #d7d7d7;
+    border-radius: 4px;
+    width: 1.25em;
+    height: 1.25em;
+}
+
+#actor-list li [type="checkbox"]:not(:checked) + label::before,
+#actor-list li [type="checkbox"]:checked + label::before,
+#actor-list-core li [type="checkbox"]:not(:checked) + label::before,
+#actor-list-core li [type="checkbox"]:checked + label::before
+{
+    background: #e8e8e8;
+    position: absolute;
+
+}
+
+.dhma-actor-more-less .filter-less,
+.dhma-activity-more-less .filter-less,
+.dhma-category-more-less .filter-less{
+    display: none;
+}
+
+.left_posts.business_posts.dariah_tool {
+    padding-top: 10px !important;
+}
+
+.right_sb.business_sidebar.dhma_tool_sidebar {
+    padding-top: 10px !important;
+}
+
+#dhma-sidebar-hide {
+    border: 1px solid #ed6f59;
+    padding: 10px;
+    margin: 10px;
+}
+
+#wrapper {
+
+}
+#dhma-count,
+#dhma-count-core {
+    display: inline-block;
+    padding-top: 20px;
+}
+#dhma-sidebar-div {
+    display: inline-block;
+    text-align: right;
+    float:right;
+}
+.w-100 {
+    width: 100% !important;
+}
+.wm-100 {
+    max-width: 100% !important;
+}
+
+/*
+TABS TOOLS AND SERVICES
+*/
+
+.dh-tab-description {
+    width: 100%;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EEE;
+    display: inline-block;
+}
+.dh-tab-description-div {
+    width: 80%;
+}
+ul.dh-tabs{
+    margin-left: 0px !important;
+    margin-top: 20px !important;
+    padding: 0px;
+    list-style: none;
+    border-bottom: 1px solid #333;
+}
+.dh-tab-link {
+    border-top: 1px solid #333;
+    border-left: 1px solid #333;
+    border-right: 1px solid #333;
+}
+
+.dh-tab-link.current {
+    font-weight: bold;
+}
+ul.dh-tabs li{
+    background: none;
+    color: #222;
+    display: inline-block;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+ul.dh-tabs li.current{
+    background: #ededed;
+    color: #222;
+}
+
+.dh-tab-count-wrapper {
+   margin-top: 10px;
+   margin-bottom: 10px;
+}
+.dh-tab-content{
+    display: none;
+}
+
+.dh-tab-content.current{
+    display: inherit;
+}
+
+.dhma-search-field-two.overview {
+    display: none;
+}
+
+#dhma-ul-list-core {
+    padding-left: 0px !important;
+    margin-left: 0px !important;
+}
+
+.dh_num_of_tools {
+    font-weight: bold;
+}
+
+.dh-list{
+    list-style: none;
+}
+.dh-list .dh-list-item a {
+    display: flex;
+    padding: 10px 0px;
+}
+
+/*list item image wrapper*/
+.dh-list .dh-list-item__image{
+    flex-shrink: 0;
+    max-width: 150px;
+    width: 150px;
+    text-align: left;
+    object-fit: contain;
+    padding-right: 20px;
+}
+
+/*list item content*/
+.dh-list .dh-list-item__content{
+    flex-grow: 1;
+    padding-right: 10px;
+}
+.dh-list .dh-list-item__content h4{
+    margin: 0;
+    font-size: 18px;
+    margin-top: 15px;
+}
+
+.dh-list .dh-list-item__content p{
+    margin-top: 5px;
+    margin-bottom: 0;
+    color: #333 !important;
+}
+
+.dh-list .dh-list-item__content p:hover {
+    color: #333;
+}
+
+.dh-list .dh-list-item:not(:last-child){
+        border-bottom: 1px solid #EEE;
+    }
