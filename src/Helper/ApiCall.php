@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 class ApiCall {
 
     const BASE_URL = 'https://marketplace-api.sshopencloud.eu/api/';
-    const API_URL_OVERVIEW = 'item-search?categories=tool-or-service&f.keyword=DARIAH National Resource&order=label';
+    const API_URL_OVERVIEW = 'item-search?categories=tool-or-service&f.keyword=DARIAH Resource&order=label';
     const API_URL_OVERVIEW_CORE = 'item-search?categories=tool-or-service&f.keyword=DARIAH Core Service&order=label';
     const API_URL_DETAIL = 'tools-services/';
     private $pluginDir;
