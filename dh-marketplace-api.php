@@ -104,10 +104,13 @@ function dhma_overview_search_widget() {
 }
 
 function dhma_overview() {
-    return '<ul class="dh-tabs">
-                <li class="dh-tab-link current" data-tab="dh-tab-2">Core services</li>
-		<li class="dh-tab-link" data-tab="dh-tab-1">Community Services</li>
-            </ul>'
+    return '
+        <div class="dha-container">
+            <div class="dha-box">
+                <ul class="dh-tabs">
+                    <li class="dh-tab-link current" data-tab="dh-tab-2">Core services</li>
+                    <li class="dh-tab-link" data-tab="dh-tab-1">Community Services</li>
+                </ul>'
             . '<div id="wrapper" class="dh-tab-count-wrapper">'
                 . '<div class="dh-tab-description">'
                     . '<div class="dh-tab-description-div">'
@@ -130,7 +133,8 @@ function dhma_overview() {
                     . '<ul id="dhma-ul-list" class="dh-list"></ul>'
                 . '</div>'
             . '</div>'
-            . '</div>';
+            . '</div>'
+            . '<div class="dha-box right_sb dhma_tool_sidebar">' . do_shortcode("[dhma_overview_search_widget]") .'</div></div>';
 }
 
 function dhma_detail() {

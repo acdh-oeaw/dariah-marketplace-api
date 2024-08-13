@@ -121,8 +121,8 @@ ul.dh-tabs li.current{
 }
 
 .dh-tab-count-wrapper {
-   margin-top: 10px;
-   margin-bottom: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 .dh-tab-content{
     display: none;
@@ -185,5 +185,17 @@ ul.dh-tabs li.current{
 }
 
 .dh-list .dh-list-item:not(:last-child){
-        border-bottom: 1px solid #EEE;
-    }
+    border-bottom: 1px solid #EEE;
+}
+
+
+.dha-container {
+    display: flex;
+    width: 100%;
+    min-width: 650px;
+}    
+
+.dha-box {
+    flex: 1;
+    padding: 10px;
+}

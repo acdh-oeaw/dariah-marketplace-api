@@ -1,5 +1,8 @@
 (function ($) {
     'use strict';
+
+    var baseUrl = '';
+    var config = '';
     let pluginUrl = "/wp-content/plugins/dh-marketplace-api/";
     var allData = "";
     var allDataCore = "";
@@ -8,40 +11,46 @@
     var searchParams = "";
     //handle the pages
     jQuery(document).ready(function ($) {
-        var pageURL = $(location).attr("href");
-        if (pageURL.indexOf("/tools-services/tools-and-services/?update") >= 0) {
-            $('.section.def_section').css('padding-top', '10px');
-            $('#posts').css('padding', '20px 0px 20px 0;');
-            $('body').removeClass('page-template-default');
-            $('body').addClass('page-template page-template-single-app page-template-single-app-php');
-            wprequest();
-        } else
-        if (pageURL.indexOf("/tools-services/tools-and-services/") >= 0) {
-            $('body').removeClass('page-template-default');
-            $('body').addClass('page-template page-template-single-app page-template-single-app-php');
-            $('.section.def_section').css('padding-top', '10px');
-            //$('.page-template-single-app').css('padding', '20px;');
-            $('#posts').css('padding', '20px 0px 20px 0;');
+        $.get('../wp-content/plugins/dh-marketplace-api/config.ini', function (data) {
+            config = parseINIString(data);
+        });
+        
+        setTimeout(function () {
+            var pageURL = $(location).attr("href");
+            if (pageURL.indexOf(config.wpUpdatePage) >= 0) {
+                $('.section.def_section').css('padding-top', '10px');
+                $('#posts').css('padding', '20px 0px 20px 0;');
+                $('body').removeClass('page-template-default');
+                $('body').addClass('page-template page-template-single-app page-template-single-app-php');
+                wprequest();
+            } else
+            if (pageURL.indexOf(config.wpListPage) >= 0) {
+                $('body').removeClass('page-template-default');
+                $('body').addClass('page-template page-template-single-app page-template-single-app-php');
+                $('.section.def_section').css('padding-top', '10px');
+                //$('.page-template-single-app').css('padding', '20px;');
+                $('#posts').css('padding', '20px 0px 20px 0;');
 
-            $('.dh-tab-description-text').text(getDescription('core'));
+                $('.dh-tab-description-text').text(getDescription('core'));
 
-            searchParams = pageURL.substr(pageURL.lastIndexOf('/') + 1);
-            if (searchParams) {
-                processAPIFile(true);
-            } else {
-                processAPIFile();
+                searchParams = pageURL.substr(pageURL.lastIndexOf('/') + 1);
+                if (searchParams) {
+                    processAPIFile(true);
+                } else {
+                    processAPIFile();
+                }
             }
-        }
-        if (pageURL.indexOf("/tools-services/tools-services-detail-view/") >= 0) {
-            $('.section.def_section').css('padding-top', '10px');
-            $('.page-template-single-app.def_section').css('padding', '20px;');
-            let searchParams = new URLSearchParams(window.location.search);
-            displayDetailView(searchParams.get('id'));
-        }
+            if (pageURL.indexOf(config.wpDetailPage) >= 0) {
+                $('.section.def_section').css('padding-top', '10px');
+                $('.page-template-single-app.def_section').css('padding', '20px;');
+                let searchParams = new URLSearchParams(window.location.search);
+                displayDetailView(searchParams.get('id'));
+            }
+        }, 2000);
+
     });
 
     $(document).delegate("ul.dh-tabs li", "click", function (e) {
-        console.log("Clicked");
         var tab_id = $(this).attr('data-tab');
         $('ul.dh-tabs li').removeClass('current');
         $('.dh-tab-content').removeClass('current');
@@ -77,9 +86,40 @@
         window.history.replaceState({}, '', currentUrl);
     });
 
+    // Function to parse INI string into a JavaScript object
+    function parseINIString(data) {
+        let regex = {
+            section: /^\s*\[\s*([^\]]*)\s*\]\s*$/,
+            param: /^\s*([^=]+?)\s*=\s*(.*?)\s*$/,
+            comment: /^\s*[;#].*$/,
+        };
+        let value = {};
+        let lines = data.split(/[\r\n]+/);
+        let section = null;
+
+        lines.forEach(line => {
+            if (regex.comment.test(line)) {
+                return;
+            } else if (regex.param.test(line)) {
+                let match = line.match(regex.param);
+                if (section) {
+                    value[section][match[1]] = match[2];
+                } else {
+                    value[match[1]] = match[2];
+                }
+            } else if (regex.section.test(line)) {
+                let match = line.match(regex.section);
+                value[match[1]] = {};
+                section = match[1];
+            }
+        });
+        return value;
+    }
+
+
     function resetBaseUrl() {
         var currentUrl = window.location.href;
-        var textToKeep = "tools-services/tools-and-services/";
+        var textToKeep = config.wpListPage;
         var position = currentUrl.indexOf(textToKeep);
         if (position !== -1) {
             currentUrl = currentUrl.substring(0, position + textToKeep.length);
@@ -231,7 +271,7 @@
      */
     function extendUrlWithParams(tab, searchStr, actors, categories, activities) {
         var currentUrl = window.location.href;
-        var textToKeep = "tools-services/tools-and-services/";
+        var textToKeep = config.wpListPage;
         var position = currentUrl.indexOf(textToKeep);
         if (position !== -1) {
             currentUrl = currentUrl.substring(0, position + textToKeep.length);
@@ -310,16 +350,16 @@
     $(document).delegate("#dhma-sidebar-hide", "click", function (e) {
         e.preventDefault();
         if ($(this).hasClass('dhma_sidebar_hide_btn')) {
-            $('.right_sb.business_sidebar.dhma_tool_sidebar').hide();
-            $('.left_posts.business_posts.dariah_tool').addClass('wm-100');
-            $('.left_posts.business_posts.dariah_tool').addClass('w-100');
+            $('.right_sb.dhma_tool_sidebar').hide();
+            $('.left_posts.dariah_tool').addClass('wm-100');
+            $('.left_posts.dariah_tool').addClass('w-100');
             $(this).text('Show Sidebar');
             $(this).removeClass('dhma_sidebar_hide_btn');
             $(this).addClass('dhma_sidebar_show_btn');
         } else {
-            $('.right_sb.business_sidebar.dhma_tool_sidebar').show();
-            $('.left_posts.business_posts.dariah_tool').removeClass('wm-100');
-            $('.left_posts.business_posts.dariah_tool').removeClass('w-100');
+            $('.right_sb.dhma_tool_sidebar').show();
+            $('.left_posts.dariah_tool').removeClass('wm-100');
+            $('.left_posts.dariah_tool').removeClass('w-100');
             $(this).text('Hide Sidebar');
             $(this).addClass('dhma_sidebar_hide_btn');
             $(this).removeClass('dhma_sidebar_show_btn');
@@ -332,11 +372,11 @@
         }).appendTo('#dhma-overview-core-div');
 
         var loader = $('<img/>', {
-            src: '/wp-admin/images/loading.gif',
-            'class': 'loader-image'
+            src: config.wpBaseUrl + '/wp-admin/images/loading.gif',
+            class: 'loader-image'
         }).appendTo(loaderContainer);
-
-        $.getJSON(pluginUrl + 'api-data.json', function (json, status, xhr) {
+       
+        $.getJSON(config.wpBaseUrl + pluginUrl + 'api-data.json', function (json, status, xhr) {
             let lastModified = xhr.getResponseHeader('Last-Modified');
             let today = new Date();
             let creationDate = new Date(lastModified);
@@ -505,10 +545,9 @@
         }).appendTo('#dhma-detail-div');
 
         var loader = $('<img/>', {
-            src: '/wp-admin/images/loading.gif',
+            src: config.wpBaseUrl + '/wp-admin/images/loading.gif',
             'class': 'loader-image'
         }).appendTo(loaderContainer);
-
         $.ajax({
             type: "POST",
             url: ajax_object.ajax_url,
@@ -537,6 +576,8 @@
     /** The search event and ajax **/
     function wpSearch(searchStr, actor, category, activity) {
         var view = "overview";
+        var overviewDiv = "#dhma-overview-div";
+        
         if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
             view = "core";
             $('#dh-tab-1').removeClass('current');
@@ -544,7 +585,6 @@
         } else {
             $('#dh-tab-2').removeClass('current');
             $('#dh-tab-1').addClass('current');
-
         }
 
         var loaderContainer = $('<span/>', {
@@ -552,11 +592,11 @@
         }).appendTo('#dhma-overview-core-div');
 
         var loader = $('<img/>', {
-            src: '/wp-admin/images/loading.gif',
+            src: config.wpBaseUrl + '/wp-admin/images/loading.gif',
             'class': 'loader-image'
         }).appendTo(loaderContainer);
 
-        $.getJSON(pluginUrl + 'api-data.json', function (json) {
+        $.getJSON(config.wpBaseUrl + pluginUrl + 'api-data.json', function (json) {
             loaderContainer.remove();
             var view = "overview";
             var jsonData = json.overview;
@@ -570,7 +610,7 @@
             //update the frontend with the user selected checkbox fields
             updateSelectedCheckboxes(actor, category, activity, view);
             var count = 0;
-            var overviewDiv = "#dhma-overview-div";
+            
             if (result.items !== undefined) {
                 count = result.items.length;
             }
@@ -813,7 +853,7 @@
         }).appendTo('#dhma-overview-core-div');
 
         var loader = $('<img/>', {
-            src: '/wp-admin/images/loading.gif',
+            src: config.wpBaseUrl + '/wp-admin/images/loading.gif',
             'class': 'loader-image'
         }).appendTo(loaderContainer);
 
@@ -870,8 +910,9 @@
                     }
                 }
             }
+            
             var listText = '<li itemscope="" itemtype="http://schema.org/WebApplication" class="dh-list-item">\n\
-                                <a href="/tools-services/tools-services-detail-view/?id=' + obj.persistentId + '">';
+                                <a href="' + config.wpBaseUrl +'/'+config.wpDetailPage + '/?id=' + obj.persistentId + '">';
             if (media) {
                 listText += '<div class="dh-list-item__image"><img src="' + media + '" ></div>';
             } else {
@@ -1010,11 +1051,11 @@
     function displayDetailViewContent(obj) {
         var text = "";
         text += "<div class='wrapper section_wrapper'>";
-        text += "<div id='posts' class='left_posts business_posts' style='text-align: justify;'>";
+        text += "<div id='posts' class='left_posts' style='text-align: justify;'>";
         text += detailMainContent(obj);
         text += "</div>";
 
-        text += "<div id='sidebar' class='right_sb business_sidebar'>";
+        text += "<div id='sidebar' class='right_sb'>";
         text += detailSideBarContent(obj);
         text += "</div>";
         text += "</div>";
