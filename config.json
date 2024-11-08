@@ -1,0 +1,156 @@
+{
+    "actors": {
+        "DARIAH National Node": [
+            {
+                "id": "9403",
+                "title": "CLARIAH-AT"
+            }, 
+            {
+                "id": "3235",
+                "title": "DARIAH-BE"
+            }, 
+            {
+                "id": "3754",
+                "title": "CLaDA-BG"
+            }, 
+            {
+                "id": "3403",
+                "title": "DARIAH-HR"
+            },
+            {
+                "id": "3804",
+                "title": "LINDAT/CLARIAH-CZ"
+            }, 
+            {
+                "id": "9560",
+                "title": "DARIAH-DK"
+            }, 
+            {
+                "id": "10860",
+                "title": "DARIAH-FR"
+            }, 
+            {
+                "id": "2868",
+                "title": "DARIAH-DE"
+            }, 
+            {
+                "id": "3502",
+                "title": "DARIAH-GR / DYAS"
+            }, 
+            {
+                "id": "3755",
+                "title": "DARIAH-IE"
+            }, 
+            {
+                "id": "10226",
+                "title": "DARIAH-IT"
+            }, 
+            {
+                "id": "9561",
+                "title": "DARIAH-LU"
+            }, 
+            {
+                "id": "9562",
+                "title": "CLARIAH-NL"
+            }, 
+            {
+                "id": "3752",
+                "title": "DARIAH-PL"
+            }, 
+            {
+                "id": "3553",
+                "title": "DARIAH-PT / ROSSIO"
+            }, 
+            {
+                "id": "9133",
+                "title": "DARIAH-SI"
+            }, 
+            {
+                "id": "11803",
+                "title": "CLARIAH-ES"
+            }, 
+            {
+                "id": "10002",
+                "title": "DARIAH-CH"
+            }
+        ]
+        ,
+        "DARIAH Working Groups": 
+                [
+                    {
+                        "id": 12775,
+                        "title": "Analyzing and linking biographical data"
+                    },
+                    {
+                        "id": 12772,
+                        "title": "ARChitectural HEritage Thesaurus through Integrated digital Procedures and Open data"
+                    },
+                    {
+                        "id": 12773,
+                        "title": "Artificial Intelligence and Music"
+                    },
+                    {
+                        "id": 12306,
+                        "title": "Bibliographical Data"
+                    },
+                    {
+                        "id": 12307,
+                        "title": "#dariahTeach"
+                    },
+                    {
+                        "id": 12778,
+                        "title": "Community Engagement"
+                    },
+                    {
+                        "id": 12302,
+                        "title": "DARIAH Research Data Management"
+                    },
+                    {
+                        "id": 12303,
+                        "title": "DH Course Registry"
+                    },
+                    {
+                        "id": 12309,
+                        "title": "Digital Numismatics"
+                    },
+                    {
+                        "id": 12102,
+                        "title": "Digital Practices for the Study of Urban Heritage"
+                    },
+                    {
+                        "id": 10359,
+                        "title": "Ethics and Legality in Digital Arts and Humanities"
+                    },
+                    {
+                        "id": 12777,
+                        "title": "Lexical Resources"
+                    },
+                    {
+                        "id": 12304,
+                        "title": "Multilingual DH"
+                    },
+                    {
+                        "id": 12776,
+                        "title": "Sustainable publishing of (meta)data"
+                    },
+                    {
+                        "id": 12305,
+                        "title": "Theatralia"
+                    },
+                    {
+                        "id": 10283,
+                        "title": "Thesaurus Maintenance"
+                    },
+                    {
+                        "id": 12774,
+                        "title": "Visual Media and Interactivity"
+                    },
+                    {
+                        "id": 12308,
+                        "title": "Women Writers in History"
+                    }
+                ]
+        ,
+        "DARIAH Cooperating Partners": []
+    }
+}

@@ -3,10 +3,54 @@
     let pluginUrl = "/wp-content/plugins/dh-marketplace-api/";
     var allData = "";
     var allDataCore = "";
-
+    var urlContent = "";
+    var urlData = {};
+    var searchParams = "";
+    var baseConfig = "";
+    var pageURL = $(location).attr("href");
+    
     //handle the pages
-    jQuery(document).ready(function ($) {
-        var pageURL = $(location).attr("href");
+    $( document ).ready(function() {
+        baseConfig = initConfig();
+    });
+
+    $(document).delegate("ul.dh-tabs li", "click", function (e) {
+        var tab_id = $(this).attr('data-tab');
+        $('ul.dh-tabs li').removeClass('current');
+        $('.dh-tab-content').removeClass('current');
+
+        $(this).addClass('current');
+        $("#" + tab_id).addClass('current');
+        if (tab_id === "dh-tab-1") {
+            $('.dh-tab-description-text').text(getDescription('overview'));
+            $('#dhma-count').show();
+            $('#dhma-count-core').hide();
+            $('.dhma-search-field-two.core').hide();
+            $('.dhma-search-field-two.overview').show();
+            var currentUrl = resetBaseUrl();
+            window.history.replaceState({}, '', currentUrl);
+        } else {
+            $('.dh-tab-description-text').text(getDescription('core'));
+            $('#dhma-count').hide();
+            $('#dhma-count-core').show();
+            $('.dhma-search-field-two.core').show();
+            $('.dhma-search-field-two.overview').hide();
+            var currentUrl = resetBaseUrl();
+            window.history.replaceState({}, '', currentUrl);
+        }
+    });
+
+    $(document).delegate("#toolsResetSearchBtn", "click", function (e) {
+        e.preventDefault();
+        $('input:checkbox').removeAttr('checked');
+        $('#toolsSearchInput').val('');
+        var currentUrl = resetBaseUrl();
+        doTheSearch();
+        //restore the url
+        window.history.replaceState({}, '', currentUrl);
+    });
+
+    function initMainFunctions() {
         if (pageURL.indexOf("/tools-services/tools-and-services/?update") >= 0) {
             $('.section.def_section').css('padding-top', '10px');
             $('#posts').css('padding', '20px 0px 20px 0;');
@@ -20,7 +64,15 @@
             $('.section.def_section').css('padding-top', '10px');
             //$('.page-template-single-app').css('padding', '20px;');
             $('#posts').css('padding', '20px 0px 20px 0;');
-            processAPIFile();
+
+            $('.dh-tab-description-text').text(getDescription('core'));
+
+            searchParams = pageURL.substr(pageURL.lastIndexOf('/') + 1);
+            if (searchParams) {
+                processAPIFile(true);
+            } else {
+                processAPIFile();
+            }
         }
         if (pageURL.indexOf("/tools-services/tools-services-detail-view/") >= 0) {
             $('.section.def_section').css('padding-top', '10px');
@@ -28,15 +80,113 @@
             let searchParams = new URLSearchParams(window.location.search);
             displayDetailView(searchParams.get('id'));
         }
-    });
-    
-    $(document).delegate("#toolsResetSearchBtn", "click", function (e) {
-        e.preventDefault();
-        $('input:checkbox').removeAttr('checked');
-        $('#toolsSearchInput').val('');
-        doTheSearch();
-    });
-    
+    }
+
+    function resetBaseUrl() {
+        var currentUrl = window.location.href;
+        var textToKeep = "tools-services/tools-and-services/";
+        var position = currentUrl.indexOf(textToKeep);
+        if (position !== -1) {
+            currentUrl = currentUrl.substring(0, position + textToKeep.length);
+        }
+        return currentUrl;
+    }
+
+    function getDescription(view) {
+        var text = "";
+        if (view === "overview") {
+            //get overview description
+            text = $('.tab-community-description-text').text();
+        } else {
+            //get core description
+            text = $('.tab-core-description-text').text();
+        }
+        return text;
+    }
+
+    function queryStringToObject(queryString) {
+        var params = new URLSearchParams(queryString);
+        var resultObject = [];
+
+        params.forEach(function (value, key) {
+            var keys = key.split('[').map(function (part) {
+                return part.replace(/\]$/, '');
+            });
+
+            var currentObj = resultObject;
+
+            keys.forEach(function (innerKey, index) {
+                if (!currentObj[innerKey]) {
+                    currentObj[innerKey] = index === keys.length - 1 ? value : {};
+                }
+
+                currentObj = currentObj[innerKey];
+            });
+        });
+
+        return resultObject;
+    }
+
+    /**
+     * On the first load if we have params in the url, then we perform the search
+     * @returns {undefined}
+     */
+    function doTheSearchByParams() {
+        searchParams = searchParams.substring(1);
+        var queryParams = queryStringToObject(searchParams);
+        var searchStr = (queryParams.searchStr) ? queryParams.searchStr : "";
+        var categories = (queryParams.categories) ? $.map(queryParams.categories, function (value) {
+            return value;
+        }) : [];
+        var activities = (queryParams.activities) ? $.map(queryParams.activities, function (value) {
+            return value;
+        }) : [];
+        var actors = (queryParams.actors) ? $.map(queryParams.actors, function (value) {
+            return value;
+        }) : [];
+
+        //make tab active
+        $('[data-tab]').each(function () {
+            // Get the value of the data-tab attribute
+            var tabValue = $(this).data('tab');
+
+            // Add or remove the 'active-tab' class based on the condition
+            if (tabValue === queryParams.tab) {
+                $(this).addClass('current');
+            } else {
+                $(this).removeClass('current');
+            }
+        });
+
+        var view = '#dhma-overview-div';
+        var viewList = 'dhma-ul-list';
+        var updateView = "overview";
+        var tab = "dh-tab-1";
+        if (queryParams.tab === "dh-tab-2") {
+            tab = "dh-tab-2";
+            updateView = "core";
+            view = '#dhma-overview-core-div';
+            viewList = 'dhma-ul-list-core';
+        }
+
+        $(view).empty().html('<ul id="' + viewList + '" class="dh-list"></ul>');
+        //add the search params to the url
+        extendUrlWithParams(tab, searchStr, actors, categories, activities);
+
+        wpSearch(searchStr, actors, categories, activities);
+
+        updateActors(updateView);
+        updateActivityCategory(updateView);
+
+        if (searchStr) {
+            $('#toolsSearchInput').val(searchStr);
+        }
+    }
+
+    /**
+     * execute the search function
+     * @returns {undefined}
+     */
     function doTheSearch() {
         let searchStr = $('#toolsSearchInput').val();
         var actors = [];
@@ -45,14 +195,6 @@
 
         $('input[class="actors-chk"]:checked').each(function () {
             let category = $(this).attr("data-category");
-            /*
-             if (!actors[category]) {
-             actors[category] = [];
-             }
-             
-             if (this.value) {
-             actors[category].push(this.value.toLowerCase());
-             }*/
             let obj = {role: category, name: this.value.toLowerCase()};
             actors.push(obj);
         });
@@ -70,23 +212,61 @@
         });
         var view = '#dhma-overview-div';
         var viewList = 'dhma-ul-list';
-        if($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+        var tab = "dh-tab-1";
+        if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+            tab = "dh-tab-2";
             view = '#dhma-overview-core-div';
             viewList = 'dhma-ul-list-core';
         }
-        $(view).empty().html('<ul id="'+viewList+'" class="dh-list"></ul>');
+        $(view).empty().html('<ul id="' + viewList + '" class="dh-list"></ul>');
+        //add the search params to the url
+        extendUrlWithParams(tab, searchStr, actors, categories, activities);
+
         wpSearch(searchStr, actors, categories, activities);
-        
     }
-    
+
+    /**
+     * Add url params based on the search selected values
+     * @param {type} tab
+     * @param {type} searchStr
+     * @param {type} actors
+     * @param {type} categories
+     * @param {type} activities
+     * @returns {undefined}
+     */
+    function extendUrlWithParams(tab, searchStr, actors, categories, activities) {
+        var currentUrl = window.location.href;
+        var textToKeep = "tools-services/tools-and-services/";
+        var position = currentUrl.indexOf(textToKeep);
+        if (position !== -1) {
+            currentUrl = currentUrl.substring(0, position + textToKeep.length);
+        }
+
+        // Parameters to add
+        var additionalParams = {
+            actors: actors,
+            categories: categories,
+            activities: activities,
+            searchStr: searchStr
+        };
+
+        // Serialize the additional parameters
+        var serializedParams = $.param(additionalParams);
+
+        // Extend the URL by concatenating the serialized parameters
+        var extendedUrl = currentUrl + '?tab=' + tab + '&' + serializedParams;
+
+        window.history.replaceState({}, '', extendedUrl);
+    }
+
     $(document).delegate("#toolsSearchInput", "change", function (e) {
         e.preventDefault();
-        if($(this).val().length > 2) {
+        if ($(this).val().length > 2) {
             doTheSearch();
-        } 
-        
+        }
+
     });
-    
+
     $(document).delegate(".dhma-search-field input[type=checkbox]", "change", function (e) {
         e.preventDefault();
         doTheSearch();
@@ -103,15 +283,16 @@
         e.preventDefault();
         var view = "";
         let tabval = $('.dh-tab-link.current').data('tab');
-        
-        if($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+
+        if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
             view = "-core";
         }
         let category = $(this).attr("data-category");
-        if (category === "actor") {
-            $('#' + category + '-list'+view+' h5.hidden-dhma-list-element').show();
+         if (category.includes("actor")) { 
+            $('#actor-list' + view +'-'+ category+ ' li.hidden-dhma-list-element').show();
         }
-        $('#' + category + '-list'+view+' li.hidden-dhma-list-element').show();
+     
+        $('#' + category + '-list' + view + ' li.hidden-dhma-list-element').show();
         $('.dhma-' + category + '-more-less > a.filter-more').hide();
         $('.dhma-' + category + '-more-less > a.filter-less').show();
     });
@@ -119,15 +300,15 @@
     $(document).delegate(".filter-less", "click", function (e) {
         e.preventDefault();
         var view = "";
-        if($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+        if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
             view = "-core";
         }
         let category = $(this).attr("data-category");
-        if (category == "actor") {
-            $('#' + category + '-list'+view+' h5.hidden-dhma-list-element').hide();
+        if (category.includes("actor")) { 
+            $('#actor-list' + view +'-'+ category+ ' li.hidden-dhma-list-element').hide();
         }
-        
-        $('#' + category + '-list'+view+' li.hidden-dhma-list-element').hide();
+
+        $('#' + category + '-list' + view + ' li.hidden-dhma-list-element').hide();
         $('.dhma-' + category + '-more-less > a.filter-more').show();
         $('.dhma-' + category + '-more-less > a.filter-less').hide();
     });
@@ -151,8 +332,17 @@
         }
     });
 
-    function processAPIFile() {
-        
+    function initConfig() {
+        $.getJSON(pluginUrl + 'config.json', function (json, status, xhr) {            
+            baseConfig = json;
+            initMainFunctions();
+        }).fail(function () {
+            console.log("Error loading config file.");
+            $('.tf_single_page').html("Config error is not loaded, please refresh the page!");
+        });
+    }
+
+    function processAPIFile(fromUrl = false) {
         var loaderContainer = $('<span/>', {
             'class': 'loader-image-container'
         }).appendTo('#dhma-overview-core-div');
@@ -182,6 +372,10 @@
             $('#dhma-count').html("<span class='dh_num_of_tools'>Number of Tools and Services: " + count + " </span>");
             $('#dhma-count-core').html("<span class='dh_num_of_tools'>Number of Tools and Services: " + countCore + " </span>");
 
+            if (fromUrl) {
+                doTheSearchByParams();
+            }
+
         }).fail(function (error, status, xhr) {
             loaderContainer.remove();
             if (xhr === "Not Found") {
@@ -192,8 +386,9 @@
                 $('#dhma-overview-core-div').html('Tools And Servies List is empty!');
             }
         });
+
     }
-    
+
     function displayFileContent(json, view) {
         updateActors(view);
         updateActivityCategory(view);
@@ -201,57 +396,40 @@
     }
 
     function updateActors(view) {
-        var dataset = allData;
         var actorId = "#actor-list";
-        if(view === "core") {
-            dataset = allDataCore;
+        var actorClass = "actor-list";
+        if (view === "core") {
             actorId = "#actor-list-core";
+            actorClass = "actor-list-core";
         }
         
-        var actors = {};
-        $.each(dataset.items, function (index, obj) {
-            if (obj.contributors) {
-                $.each(obj.contributors, function (i, actor) {
-                    let role = actor.role.code;
-                    if (!actors[role]) {
-                        actors[role] = [];
-                    }
-                    if (actor.actor.name !== 'DARIAH-EU') {
-                        var actorsStr = $.inArray(actor.actor.name, actors[role]);
-                        if (actorsStr === -1) {
-                            actors[role].push(actor.actor.name);
-                        }
-                    }
-                });
-            }
-        });
-
         var $el = $(actorId);
         $el.empty();
-        $el.append("<ul>");
-        var i = 0;
+        
         let hidden = "style='display: none;'";
-
-        $.each(actors, function (key, value) {
-            if(key === 'reviewer') {
-                if (i < 5) {
-                    $el.append("<h5 style='text-transform: capitalize;'>DARIAH national node</h5>");
-                } else {
-                    $el.append("<h5 style='text-transform: capitalize; display: none;' class='hidden-dhma-list-element'>DARIAH national node</h5>");
-                }
-                value = value.sort();
-                $.each(value, function (k, v) {
-                    if (i > 5) {
-                        $el.append($("<li " + hidden + " class='hidden-dhma-list-element'><input class='actors-chk' name='actors' type='checkbox' data-category='" + key + "' value='" + v.toLowerCase() + "' id='actorschk_" + k + "'> <label for='actorschk_" + k + "'>" + v + "</label></li>"));
-                    } else {
-                        $el.append($("<li><input class='actors-chk' name='actors' type='checkbox' value='" + v.toLowerCase() + "' data-category='" + key + "' id='actorschk_" + k + "'> <label for='actorschk_" + k + "'>" + v + "</label></li>"));
-                    }
-                    i++;
-                });
-            }
+        var actorDiv = 0;
+        $.each(baseConfig.actors, function (key, value) {
+            $el.append("<h5 style='text-transform: capitalize;'>"+key+"</h5>");
+            var listHtml = "<div id='"+actorClass+"-actor"+actorDiv+"'><ul>";
+            
+            var i = 0;
+            $.each(value, function (k, v) {
+                 if (i > 5) {
+                     listHtml += "<li " + hidden + " class='hidden-dhma-list-element'><input class='actors-chk' name='actors' type='checkbox' data-category='reviewer' value='" + v.title.toLowerCase() + "' id='actorschk_" + k + "'> <label for='actorschk_" + k + "'>" + v.title + "</label></li>";
+                 } else {
+                    listHtml += "<li><input class='actors-chk' name='actors' type='checkbox' value='" + v.title.toLowerCase() + "' data-category='reviewer' id='actorschk_" + k + "'> <label for='actorschk_" + k + "'>" + v.title + "</label></li>";
+                 }
+                 i++;
+             });
+            
+            listHtml += "<ul>";
+            $el.append(listHtml);
+            $el.append("</div>");
+            
+            $el.append("<div class='dhma-actor"+actorDiv+"-more-less'><a class='filter-more' data-category='actor"+actorDiv+"' href='#'>+ More</a><a class='filter-less' href='#' data-category='actor"+actorDiv+"'>- Less</a></div>");
+            actorDiv++;
         });
-        $el.append("</ul>");
-        $el.append("<div class='dhma-actor-more-less'><a class='filter-more' data-category='actor' href='#'>+ More</a><a class='filter-less' href='#' data-category='actor'>- Less</a></div>");
+        
     }
 
     function updateActivityCategory(view) {
@@ -260,12 +438,12 @@
         var dataset = allData;
         var activityId = "#activity-list";
         var categoryId = "#category-list";
-        if(view === "core") {
+        if (view === "core") {
             dataset = allDataCore;
             activityId = "#activity-list-core";
             categoryId = "#category-list-core";
         }
-      
+
         $.each(dataset.items, function (index, obj) {
             if (obj.properties) {
                 $.each(obj.properties, function (i, prop) {
@@ -357,11 +535,17 @@
 
     /** The search event and ajax **/
     function wpSearch(searchStr, actor, category, activity) {
-
-        var view ="overview";
-        if($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+        var view = "overview";
+        if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
             view = "core";
+            $('#dh-tab-1').removeClass('current');
+            $('#dh-tab-2').addClass('current');
+        } else {
+            $('#dh-tab-2').removeClass('current');
+            $('#dh-tab-1').addClass('current');
+
         }
+
         var loaderContainer = $('<span/>', {
             'class': 'loader-image-container'
         }).appendTo('#dhma-overview-core-div');
@@ -375,27 +559,39 @@
             loaderContainer.remove();
             var view = "overview";
             var jsonData = json.overview;
-            if($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
+            if ($('.dh-tab-link.current').data('tab') === "dh-tab-2") {
                 jsonData = json.core;
                 view = "core";
             }
-            
+
             let result = searchContent(jsonData, searchStr, actor, category, activity);
-            
             displayFileContent(result, view);
             //update the frontend with the user selected checkbox fields
             updateSelectedCheckboxes(actor, category, activity, view);
             var count = 0;
             var overviewDiv = "#dhma-overview-div";
-            if(result.items !== undefined) {
+            if (result.items !== undefined) {
                 count = result.items.length;
             }
-            var countView ="";
-            if(view === "core") {
+
+            var countView = "";
+            if (view === "core") {
                 countView = "-core";
                 overviewDiv = "#dhma-overview-core-div";
             }
-            $('#dhma-count'+countView).html("<h4>Number of Tools and Services: " + count + " </h4>");
+            $('#dhma-count' + countView).html("<h4>Number of Tools and Services: " + count + " </h4>");
+            if (view === "overview") {
+                $('#dhma-count-core').hide();
+                $('#dhma-count').show();
+                $('.dhma-search-field-two.core').hide();
+                $('.dhma-search-field-two.overview').show();
+
+            } else {
+                $('#dhma-count-core').show();
+                $('#dhma-count').hide();
+                $('.dhma-search-field-two.core').show();
+                $('.dhma-search-field-two.overview').hide();
+            }
 
         }).fail(function () {
             loaderContainer.remove();
@@ -404,35 +600,73 @@
     }
 
     function updateSelectedCheckboxes(actor, category, activity, view) {
-        
         var activityId = "#activity-list";
         var actorId = "#actor-list";
         var categoryId = "#category-list";
-        if(view === "core") {
+        if (view === "core") {
             activityId = "#activity-list-core";
             categoryId = "#category-list-core";
             actorId = "#actor-list-core";
         }
-        
+
+        urlData[actorId] = [];
+        urlData[activityId] = [];
+        urlData[categoryId] = [];
+
         $.each(actor, function (index, obj) {
-            $(actorId+' li input[type=checkbox]').filter(function () {
+            $(actorId + ' li input[type=checkbox]').filter(function () {
                 let category = $(this).attr("data-category");
-                return (category === obj.role) && (this.value === obj.name);
+
+                if ((category === obj.role) && (this.value === obj.name)) {
+                    var role = {
+                        [category]: [this.value]
+                    };
+
+                    if (urlData[actorId].hasOwnProperty(category)) {
+                        urlData[actorId][category].push(this.value);
+                    } else {
+                        urlData[actorId] = role;
+                    }
+                    return true;
+                }
             }).prop('checked', true);
         });
 
         $.each(category, function (index, obj) {
-            $(categoryId+' li input[type=checkbox]').filter(function () {
-                return this.value === obj;
+            $(categoryId + ' li input[type=checkbox]').filter(function () {
+                if (this.value === obj) {
+                    var role = {
+                        [category]: [this.value]
+                    };
+
+                    if (urlData[categoryId].hasOwnProperty(category)) {
+                        urlData[categoryId][category].push(this.value);
+                    } else {
+                        urlData[categoryId] = role;
+                    }
+                    return true;
+                }
             }).prop('checked', true);
         });
 
         $.each(activity, function (index, obj) {
-            $(activityId+' li input[type=checkbox]').filter(function () {
-                return this.value === obj;
+            $(activityId + ' li input[type=checkbox]').filter(function () {
+                if (this.value === obj) {
+                    var role = {
+                        [category]: [this.value]
+                    };
+
+                    if (urlData[activityId].hasOwnProperty(category)) {
+                        urlData[activityId][category].push(this.value);
+                    } else {
+                        urlData[activityId] = role;
+                    }
+                    return true;
+                }
             }).prop('checked', true);
         });
 
+        urlContent += "";
     }
 
 
@@ -459,6 +693,7 @@
 
     /** Filter the search values **/
     function searchContent(json, searchStr, actorArr, categoryArr, activityArr) {
+
         var results = json;
 
         if (searchStr) {
@@ -490,8 +725,8 @@
                     var authObj = {role: role, name: label};
                     contrib.push(authObj);
                 });
-                
-                if(doesArrayBContainArrayA(actorArr, contrib)) {
+
+                if (doesArrayBContainArrayA(actorArr, contrib)) {
                     actors.push(obj);
                 }
             });
@@ -602,14 +837,14 @@
 
     /** Create the Main view list **/
     function createList(json, view) {
-        
+
         var divId = "#dhma-overview-div";
         var listId = "#dhma-ul-list";
-        if(view === "core") {
+        if (view === "core") {
             divId = "#dhma-overview-core-div";
             listId = "#dhma-ul-list-core";
         }
-        
+
         if (json.items === undefined || json.items.length === 0) {
             $(divId).html('<span style="color:red;">There is no data! Please refine the search criterias!</span>');
             return;
@@ -621,6 +856,7 @@
                 .sort((a, b) => a.sort - b.sort)
                 .map(({ value }) => value)
         $.each(items, function (index, obj) {
+
             let persistentId = obj.persistentId;
             var shortDesc = obj.description.substring(0, 200) + "...";
 
@@ -635,7 +871,7 @@
             }
             var listText = '<li itemscope="" itemtype="http://schema.org/WebApplication" class="dh-list-item">\n\
                                 <a href="/tools-services/tools-services-detail-view/?id=' + obj.persistentId + '">';
-            if(media) {
+            if (media) {
                 listText += '<div class="dh-list-item__image"><img src="' + media + '" ></div>';
             } else {
                 listText += '<div class="dh-list-item__image"></div>';
@@ -647,10 +883,13 @@
                                                 </a>\n\
                             </li>';
             $(listId).append(listText);
-            
+
         });
     }
 
+
+
+    /**** DETAIL PAGE JS ***///
     function detailMainContent(obj) {
         var text = "";
         text += "<h3>" + obj.label + "</h3>";

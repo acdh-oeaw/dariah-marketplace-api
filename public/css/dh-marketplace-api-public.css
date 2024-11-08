@@ -2,21 +2,18 @@
 #actor-list-core li
 {
     list-style: none;
-    line-height: 2;
 }
 
 #category-list li,
 #category-list-core li
 {
     list-style: none;
-    line-height: 2;
 }
 
 #activity-list li,
 #activity-list-core li
 {
     list-style: none;
-    line-height: 2;
 }
 #actor-list li [type=checkbox], #activity-list li [type=checkbox], #category-list li [type=checkbox],
 #actor-list-core li [type=checkbox], #activity-list-core li [type=checkbox], #category-list-core li [type=checkbox]
@@ -39,8 +36,11 @@
 }
 
 .dhma-actor-more-less .filter-less,
+.dhma-actor0-more-less .filter-less,
+.dhma-actor1-more-less .filter-less,
+.dhma-actor2-more-less .filter-less,
 .dhma-activity-more-less .filter-less,
-.dhma-category-more-less .filter-less{
+.dhma-category-more-less .filter-less {
     display: none;
 }
 
