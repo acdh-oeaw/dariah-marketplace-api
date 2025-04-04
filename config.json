@@ -151,6 +151,31 @@
                     }
                 ]
         ,
-        "DARIAH Cooperating Partners": []
+        "DARIAH Cooperating Partners": [
+            {
+                "id": "10114",
+                "title": "Aalto University"
+            }, 
+            {
+                "id": "5224",
+                "title": "University of Helsinki"
+            }, 
+            {
+                "id": "12955",
+                "title": "Eötvös Loránd University"
+            }, 
+            {
+                "id": "8737",
+                "title": "University of Leeds"
+            }, 
+            {
+                "id": "12205",
+                "title": "University of Brighton"
+            }, 
+            {
+                "id": "4997",
+                "title": "University of Edinburgh"
+            }
+        ]
     }
 }
